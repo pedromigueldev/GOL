@@ -8,8 +8,8 @@
 
 typedef struct {
     Rectangle rec;
-    bool alive;
     int neighbours;
+    bool alive;
 } Cell;
 
 enum State {
@@ -83,10 +83,11 @@ int main(void)
         .y = -1,
     };
 
-    SetTargetFPS(60);
+    SetTargetFPS(24);
 
     float count_down = .03f;
     Timer timer = {0};
+
     while (!WindowShouldClose())
     {
 
@@ -118,15 +119,15 @@ int main(void)
 
             }
 
-            for (int i = 0; i < 100; i++) {
-                for (int j = 0; j < 100; j++) {
-                    if (CheckCollisionRecs(
-                        click_position,
-                        GRID[i][j].rec
-                        )
-                    ) GRID[i][j].alive = !GRID[i][j].alive;
-                }
-            }
+            //this is O(log n)
+            int x = (click_position.x - ((int)click_position.x) % 8) / 8;
+            int y = (click_position.y - ((int)click_position.y) % 8) / 8;
+
+            if (CheckCollisionRecs(
+                click_position,
+                GRID[y][x].rec
+                )
+            ) GRID[y][x].alive = !GRID[y][x].alive;
         }
 
         if (game.state == RUNNING && TimerDone(&timer)) {
@@ -135,9 +136,6 @@ int main(void)
             for (int i = 0; i < 100; i++) {
                 for (int j = 0; j < 100; j++) {
                     int alive = 0;
-                    Cell* this_cell = &GRID[i][j];
-
-                    if (this_cell->alive) alive--;
                     for (int line = i-1; line <= i+1; line++) {
                         for (int col = j-1; col <= j+1; col++) {
                             if (line < 0) line = 0;
@@ -146,28 +144,26 @@ int main(void)
                             if (GRID[line][col].alive) alive++;
                         };
                     }
-
-                    this_cell->neighbours = alive;
+                    if (GRID[i][j].alive) alive--;
+                    GRID[i][j].neighbours = alive;
                 }
             }
 
             //compute rules for each cell
             for (int i = 0; i < 100; i++) {
                 for (int j = 0; j < 100; j++) {
-                    Cell* this_cell = &GRID[i][j];
-
-                    if (!this_cell->alive && this_cell->neighbours == 3) {
-                        this_cell->alive = true;
+                    if (!GRID[i][j].alive && GRID[i][j].neighbours == 3) {
+                        GRID[i][j].alive = true;
                         continue;
                     }
 
-                    if (this_cell->alive) {
-                        if (this_cell->neighbours < 2 || this_cell->neighbours > 3) {
-                            this_cell->alive = false;
+                    if (GRID[i][j].alive) {
+                        if (GRID[i][j].neighbours < 2 || GRID[i][j].neighbours > 3) {
+                            GRID[i][j].alive = false;
                             continue;
                         }
-                        if (this_cell->neighbours >= 2 && this_cell->neighbours <=3) {
-                            this_cell->alive = true;
+                        if (GRID[i][j].neighbours >= 2 && GRID[i][j].neighbours <=3) {
+                            GRID[i][j].alive = true;
                             continue;
                         }
                     }
