@@ -135,7 +135,8 @@ int main(void)
             //count neighbours for each cell
             for (int i = 0; i < 100; i++) {
                 for (int j = 0; j < 100; j++) {
-                    int alive = 0;
+                    register int alive = 0;
+                    if (GRID[i][j].alive) alive--;
                     for (int line = i-1; line <= i+1; line++) {
                         for (int col = j-1; col <= j+1; col++) {
                             if (line < 0) line = 0;
@@ -144,7 +145,6 @@ int main(void)
                             if (GRID[line][col].alive) alive++;
                         };
                     }
-                    if (GRID[i][j].alive) alive--;
                     GRID[i][j].neighbours = alive;
                 }
             }
